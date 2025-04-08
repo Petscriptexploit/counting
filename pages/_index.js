@@ -10,7 +10,7 @@ export default function Home() {
   }, []);
 
   const handleIncrement = async () => {
-    const response = await fetch('/api/increment', { method: 'POST' });
+    const response = await fetch('/api/counter', { method: 'POST' });
     const data = await response.json();
     setCounter(data.counter);
   };
