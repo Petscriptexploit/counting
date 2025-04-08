@@ -2,10 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 let counter = 0;
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req, res) {
   if (req.method === 'GET') {
     return res.json({ counter });
   } else if (req.method === 'POST') {
