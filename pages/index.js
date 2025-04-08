@@ -1,45 +1,33 @@
 // pages/index.js
 import { useState, useEffect } from 'react';
-import WebSocket from 'ws';
 
 export default function Home() {
   const [counter, setCounter] = useState(0);
-  const [ws, setWs] = useState(null);
 
   useEffect(() => {
-    const wsUrl = 'ws://localhost:3000/api/counter';
-    const wsOptions = {
-      // options
+    const eventSource = new EventSource('/api/counter');
+
+    eventSource.onmessage = (event) => {
+      setCounter(parseInt(event.data));
     };
 
-    const ws = new WebSocket(wsUrl, wsOptions);
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setCounter(data.counter);
+    eventSource.onerror = () => {
+      console.log('Error occurred');
     };
 
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
+    eventSource.onopen = () => {
+      console.log('Connection established');
     };
-
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    ws.onerror = (error) => {
-      console.log('WebSocket error:', error);
-    };
-
-    setWs(ws);
 
     return () => {
-      ws.close();
+      eventSource.close();
     };
   }, []);
 
   const handleIncrement = async () => {
-    ws.send(JSON.stringify({ type: 'increment' }));
+    const response = await fetch('/api/counter', { method: 'POST' });
+    const data = await response.json();
+    setCounter(data.counter);
   };
 
   return (
