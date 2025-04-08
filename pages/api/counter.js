@@ -1,31 +1,23 @@
 // pages/api/counter.js
 import { NextApiRequest, NextApiResponse } from 'next';
-import WebSocket from 'ws';
-
-const wss = new WebSocket.Server({ port: 3000 });
 
 let counter = 0;
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  ws.on('message', (message) => {
-    const data = JSON.parse(message);
-
-    if (data.type === 'increment') {
-      counter++;
-      ws.send(JSON.stringify({ counter }));
-    }
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-});
-
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    return res.status(200).json({ counter });
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    const intervalId = setInterval(() => {
+      res.write(`data: ${counter}\n\n`);
+    }, 1000);
+
+    req.on('close', () => {
+      clearInterval(intervalId);
+    });
   } else if (req.method === 'POST') {
     counter++;
     return res.status(200).json({ counter });
